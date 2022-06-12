@@ -1,39 +1,58 @@
 import { Suspense, useReducer } from "react";
 
 import { proxy, useSnapshot, subscribe, snapshot } from "valtio";
-import { devtools, subscribeKey } from "valtio/utils";
+import {
+  derive,
+  devtools,
+  proxyWithComputed,
+  subscribeKey,
+} from "valtio/utils";
 import { useProxy } from "valtio/macro";
+import memoize from "proxy-memoize";
 
 const INITIAL_VALUE = 0;
-const state = proxy({
+const countState = proxy({
   count: INITIAL_VALUE,
   increment: () => {
-    ++state.count;
+    ++countState.count;
   },
   clear: () => {
-    state.count = 0;
+    countState.count = 0;
   },
 });
-devtools(state, { name: "state name", enabled: true });
+devtools(countState, { name: "state name", enabled: true });
 
-subscribe(state, () => {
+subscribe(countState, () => {
   // const immutableState = snapshot(state);
   // ++immutableState.count; // readonly
 });
 
-setInterval(state.increment, 1000);
+setInterval(countState.increment, 1000);
 
-const unsubscribe = subscribe(state, () => {
-  console.log(`subscribe: the count is changed to ${state.count}`);
+const unsubscribe = subscribe(countState, () => {
+  console.log(`subscribe: the count is changed to ${countState.count}`);
 });
 
 setInterval(() => {
   unsubscribe();
 }, 10000);
 
-subscribeKey(state, "count", (count) => {
+subscribeKey(countState, "count", (count) => {
   console.log(`subscribeKey: the count is changed to ${count}`);
 });
+
+const doubleCountState = derive({
+  value: (get) => get(countState).count * 2,
+});
+
+const computedCount = proxyWithComputed(
+  {
+    count: 0,
+  },
+  {
+    triple: memoize((snap) => snap.count * 3),
+  }
+);
 
 const App = () => {
   const [, rerender] = useReducer((x) => x + 1, 0);
@@ -44,15 +63,18 @@ const App = () => {
       <NoRerender />
       <button onClick={rerender}>Rerender</button>
       <AnotherCounter />
+      <ComputedCount />
     </>
   );
 };
 
 const Container = () => {
-  const { count, clear } = useSnapshot(state);
+  const { count, clear } = useSnapshot(countState);
+  const { value: doubleCount } = useSnapshot(doubleCountState);
   return (
     <>
       <h1>{count}</h1>
+      <h1>{doubleCount}</h1>
       <button onClick={clear}>Clear</button>
       <Suspense fallback={<p>Loading ...</p>}>
         <Todo />
@@ -68,7 +90,7 @@ const todoState = proxy({
 });
 
 const NoRerender = () => {
-  const { count } = state;
+  const { count } = snapshot(countState);
 
   return (
     <>
@@ -117,6 +139,17 @@ const AnotherCounter = () => {
       >
         Increment the other counter
       </button>
+    </>
+  );
+};
+
+const ComputedCount = () => {
+  const { triple } = useSnapshot(computedCount);
+
+  return (
+    <>
+      <h6>{triple}</h6>
+      <button onClick={() => ++computedCount.count}>Increment</button>
     </>
   );
 };
