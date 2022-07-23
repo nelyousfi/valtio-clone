@@ -1,4 +1,7 @@
-import { proxy } from "valtio";
+// import { proxy } from "valtio";
+
+const isObject = (x: unknown): x is object =>
+  typeof x === "object" && x !== null;
 
 type Status = "pending" | "completed";
 type Filter = Status | "all";
@@ -31,7 +34,30 @@ export const setFilter = (filter: Filter) => {
 
 export const filterValues: Filter[] = ["all", "completed", "pending"];
 
-export const store = proxy<{ filter: Filter; todos: Todo[] }>({
+const VERSION = Symbol();
+let version = 1;
+
+export const getVersion = (proxyObject: unknown): number | undefined => {
+  return isObject(proxyObject) ? (proxyObject as any)[VERSION] : undefined;
+};
+
+export const proxy = <T extends object>(initialObject: T): T => {
+  const baseObject = Object.create(Object.getPrototypeOf(initialObject));
+  const handler = {
+    get(target: T, prop: string | symbol, receiver: any) {
+      console.log({ target, prop, receiver });
+      if (prop === VERSION) {
+        return version;
+      }
+      // @ts-ignore
+      return initialObject[prop];
+    },
+  };
+  const proxyObject = new Proxy(baseObject, handler);
+  return proxyObject;
+};
+
+export const store = proxy<{ filter: Filter; todos: Todo[]; version: string }>({
   filter: "all",
   todos: [
     {
@@ -41,8 +67,9 @@ export const store = proxy<{ filter: Filter; todos: Todo[] }>({
     },
     {
       description: "Create a new song",
-      status: "completed",
+      status: "pending",
       id: 58439843,
     },
   ],
+  version: "1.0.0",
 });
