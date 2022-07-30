@@ -1,8 +1,6 @@
-// import { useSnapshot } from "valtio";
 import {
   addTodo,
   filterValues,
-  getVersion,
   removeTodo,
   setFilter,
   store,
@@ -21,7 +19,7 @@ export const Todos = () => {
     <>
       <ul>
         {filterValues.map((filter) => (
-          <>
+          <div key={filter}>
             <input
               type="radio"
               name={"filter"}
@@ -30,7 +28,7 @@ export const Todos = () => {
               onChange={() => setFilter(filter)}
             />
             <label>{filter}</label>
-          </>
+          </div>
         ))}
         {snap.todos
           .filter(
