@@ -7098,6 +7098,11 @@ proxy-compare@2.1.0:
   resolved "https://registry.yarnpkg.com/proxy-compare/-/proxy-compare-2.1.0.tgz#5f99b3ed6a265135ce7ec145ce304e6f89b6511b"
   integrity sha512-wapJ3h/w8fRSyPEG0y2WMV+tf9xwvj3nxM6aHVuPEOwKs/t5xLSKZb44ubNTiqq2T6lmEMHEWGMTaU2L6ddaFA==
 
+proxy-compare@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/proxy-compare/-/proxy-compare-2.2.0.tgz#2357330407241b091501644d08a446a4a28e0e15"
+  integrity sha512-hEtMJevUmOByZCTw1NRUVaWWHCGJLO0ogizpey8yX6zMPolDe8YVa+PHgMOTiZuyUkFj+hMKs/1UaM0+ZkuvgA==
+
 proxy-memoize@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/proxy-memoize/-/proxy-memoize-1.0.0.tgz#c5f03f2c7606c0816053f468ad4d505ae526a795"

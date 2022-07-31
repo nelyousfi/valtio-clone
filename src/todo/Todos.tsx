@@ -6,10 +6,30 @@ import {
   store,
   toggleDone,
 } from "./proxy";
-import { useRef } from "react";
+import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
+import { snapshot, subscribe } from "valtio";
+import { createProxy } from "proxy-compare";
 
-const useSnapshot = <T extends object>(initialState: T): T => {
-  return initialState;
+type Snapshot<T> = {
+  readonly [K in keyof T]: Snapshot<T[K]>;
+};
+
+const useSnapshot = <T extends object>(proxyObject: T): Snapshot<T> => {
+  const currentSnapshot = useSyncExternalStore(
+    useCallback(
+      (callback) => {
+        return subscribe(proxyObject, callback);
+      },
+      [proxyObject]
+    ),
+    () => {
+      return snapshot(proxyObject);
+    }
+  );
+
+  const currentAffected = new WeakMap();
+  const proxyCache = useMemo(() => new WeakMap(), []);
+  return createProxy<Snapshot<T>>(currentSnapshot, currentAffected, proxyCache);
 };
 
 export const Todos = () => {

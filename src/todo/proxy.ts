@@ -1,5 +1,3 @@
-import { getUntrackedObject } from "proxy-memoize";
-
 const isObject = (x: unknown): x is object =>
   typeof x === "object" && x !== null;
 
@@ -57,14 +55,14 @@ export const proxy = <T extends object>(initialObject: T): T => {
         return version;
       }
       const value = Reflect.get(target, prop, receiver);
-      console.log("-- get --");
-      console.log({ value });
-      console.log("----");
       return value;
     },
     canProxy,
     is: Object.is,
     set(target: T, prop: string | symbol, value: any, receiver: any) {
+      let nextValue;
+      nextValue = value;
+      Reflect.set(target, prop, nextValue, receiver);
       return true;
     },
   };
@@ -99,5 +97,3 @@ export const store = proxy<{ filter: Filter; todos: Todo[]; version: string }>({
   ],
   version: "1.0.0",
 });
-
-console.log(store.filter);
